@@ -2,6 +2,7 @@
 #define RENDERWIDGET_H
 
 #include <QWidget>
+#include <QPixmap>
 #include <QImage>
 
 class RenderWidget : public QWidget
@@ -11,10 +12,12 @@ class RenderWidget : public QWidget
 public:
     RenderWidget(QWidget* parent = nullptr);
     ~RenderWidget();
+public slots:
+    void updateRender(const QImage& renderedImg);
 protected:
     void paintEvent(QPaintEvent* event) override;
 private:
-    void render();
-    QImage m_img;
+    void startRendering();
+    QPixmap frontBuffer, backBuffer;
 };
 #endif // RENDERWIDGET_H

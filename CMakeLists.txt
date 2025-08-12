@@ -37,6 +37,7 @@ else()
     else()
         add_executable(QtRayTracing01
             ${PROJECT_SOURCES}
+            raytracer.h raytracer.cpp
         )
     endif()
 endif()

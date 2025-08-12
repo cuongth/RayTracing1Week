@@ -1,39 +1,46 @@
 #include "renderwidget.h"
+#include "raytracer.h"
 #include <QPainter>
+#include <QThread>
 
 RenderWidget::RenderWidget(QWidget* parent) : QWidget(parent)
 {
     setMinimumSize(256, 256);
-    render();
+    startRendering();
 }
 
 RenderWidget::~RenderWidget() {}
 
+// double buffers
+void RenderWidget::updateRender(const QImage &renderedImg)
+{
+    // convert to QPixmap for display
+    backBuffer = QPixmap::fromImage(renderedImg);
+    // actually we compute the pixels (using QImage) only 1 time,
+    // then display QPixmap.
+    std::swap(frontBuffer, backBuffer);
+    update();
+}
+
+// better rendering performance with QPixmap
 void RenderWidget::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
     QPainter painter(this);
-    if (!m_img.isNull())
-        painter.drawImage(0, 0, m_img);
+    if (!frontBuffer.isNull())
+        painter.drawPixmap(0, 0, frontBuffer);
 }
 
-void RenderWidget::render()
+void RenderWidget::startRendering()
 {
-    m_img = QImage(256, 256, QImage::Format_RGB32);
-
-    for (int j = 0; j < m_img.height(); ++j)
-        for (int i = 0; i < m_img.width(); ++i)
-        {
-            float r = (float) i / (float) m_img.width();
-            float g = (float) j / (float) m_img.height();
-            float b = 0.2;
-
-            int ir = static_cast<int>(255.99 * r);
-            int ig = static_cast<int>(255.99 * g);
-            int ib = static_cast<int>(255.99 * b);
-
-            m_img.setPixel(i, j, qRgb(ir, ig, ib));
-        }
-
-    update();
+    QThread* renderTh = new QThread;
+    RayTracer* rayTracer = new RayTracer();
+    rayTracer->moveToThread(renderTh);
+    connect(renderTh, &QThread::started,
+            rayTracer, &RayTracer::render);
+    connect(rayTracer, &RayTracer::frameReady,
+            this, &RenderWidget::updateRender);
+    connect(renderTh, &QThread::finished,
+            rayTracer, &QObject::deleteLater);
+    renderTh->start();
 }
