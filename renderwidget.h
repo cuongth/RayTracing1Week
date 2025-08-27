@@ -13,7 +13,7 @@ public:
     RenderWidget(QWidget* parent = nullptr);
     ~RenderWidget();
 public slots:
-    void updateRender(const QImage& renderedImg);
+    void updateRender(const QImage* renderedImg);
 protected:
     void paintEvent(QPaintEvent* event) override;
 private:

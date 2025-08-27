@@ -12,10 +12,10 @@ RenderWidget::RenderWidget(QWidget* parent) : QWidget(parent)
 RenderWidget::~RenderWidget() {}
 
 // double buffers
-void RenderWidget::updateRender(const QImage &renderedImg)
+void RenderWidget::updateRender(const QImage* renderedImg)
 {
     // convert to QPixmap for display
-    backBuffer = QPixmap::fromImage(renderedImg);
+    backBuffer = QPixmap::fromImage(*renderedImg);
     // actually we compute the pixels (using QImage) only 1 time,
     // then display QPixmap.
     std::swap(frontBuffer, backBuffer);
